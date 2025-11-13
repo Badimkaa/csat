@@ -68,8 +68,8 @@ sudo systemctl reload nginx
 ### 3. Install SSL Certificate
 ```bash
 sudo certbot certonly --nginx \
-  -d csat.service.ru \
-  -d csat.anotherservice.eng
+  -d survey.ostrovok.ru \
+  -d survey.emergingtravel.com
 ```
 
 ### 4. Start Service
@@ -81,7 +81,7 @@ sudo systemctl status csat
 ### 5. Test
 ```bash
 # Check it's running
-curl https://csat.service.ru/
+curl https://survey.ostrovok.ru/
 
 # View logs
 sudo journalctl -u csat -f
@@ -130,7 +130,7 @@ CSAT_LOG_DIR=/var/log/csat    # Where to store logs
 CSAT_SURVEY_EXPIRY_HOURS=24   # Survey validity duration
 
 # Security - MUST CHANGE FOR PRODUCTION
-CSAT_ALLOWED_ORIGINS=https://csat.service.ru,https://csat.anotherservice.eng
+CSAT_ALLOWED_ORIGINS=https://survey.ostrovok.ru,https://survey.emergingtravel.com
 JIRA_WEBHOOK_URL=https://your-jira.com/webhook  # Required!
 ```
 
@@ -314,10 +314,10 @@ ps aux | grep uvicorn
 ✅ You know deployment is successful when:
 
 - [ ] `sudo systemctl status csat` shows "active (running)"
-- [ ] `curl https://csat.service.ru/` returns HTML (no error)
+- [ ] `curl https://survey.ostrovok.ru/` returns HTML (no error)
 - [ ] `sudo journalctl -u csat -f` shows no errors
 - [ ] SSL certificate is valid: `sudo certbot certificates`
-- [ ] Nginx is serving with HTTPS: `curl -I https://csat.service.ru/`
+- [ ] Nginx is serving with HTTPS: `curl -I https://survey.ostrovok.ru/`
 - [ ] Data persists across restarts
 - [ ] Logs are being written to `/var/log/csat/app.log`
 

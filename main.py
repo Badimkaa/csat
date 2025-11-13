@@ -129,7 +129,7 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
     save_surveys()
 
     # Determine domain based on language
-    domain = "csat.service.ru" if language == "ru" else "csat.anotherservice.eng"
+    domain = "survey.ostrovok.ru" if language == "ru" else "survey.emergingtravel.com"
     return {"link": f"http://{domain}/survey/{token}?lang={language}"}
 
 @app.get("/survey/{token}", response_class=HTMLResponse)

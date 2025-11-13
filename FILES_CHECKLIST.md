@@ -59,15 +59,15 @@
 - [ ] Follow DEPLOYMENT.md Section 7 (SSL certificates)
   ```bash
   sudo certbot certonly --nginx \
-    -d csat.service.ru \
-    -d csat.anotherservice.eng
+    -d survey.ostrovok.ru \
+    -d survey.emergingtravel.com
   ```
 - [ ] Reload Nginx: `sudo systemctl reload nginx`
 
 ### Phase 6: Service Startup & Testing (On server)
 - [ ] Start service: `sudo systemctl start csat`
 - [ ] Check status: `sudo systemctl status csat`
-- [ ] Test HTTPS: `curl https://csat.service.ru/`
+- [ ] Test HTTPS: `curl https://survey.ostrovok.ru/`
 - [ ] Check logs: `sudo journalctl -u csat -f`
 
 ### Phase 7: Post-Deployment (On server)
@@ -177,7 +177,7 @@ See `OPERATIONS.md` for more troubleshooting.
 
 ✅ You've succeeded when:
 - [ ] `sudo systemctl status csat` shows "active (running)"
-- [ ] `curl https://csat.service.ru/` returns HTML (no error)
+- [ ] `curl https://survey.ostrovok.ru/` returns HTML (no error)
 - [ ] `/var/log/csat/app.log` has recent log entries
 - [ ] `/var/lib/csat/surveys.json` exists and has permissions 640
 - [ ] SSL certificate is valid: `sudo certbot certificates`

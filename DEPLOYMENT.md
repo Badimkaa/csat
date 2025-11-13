@@ -8,7 +8,7 @@ This guide covers deploying the CSAT survey service to an Ubuntu server for publ
 
 - Ubuntu 20.04 or later
 - Root or sudo access
-- Domain names: `csat.service.ru` and `csat.anotherservice.eng`
+- Domain names: `survey.ostrovok.ru` and `survey.emergingtravel.com`
 - SSL certificates (Let's Encrypt recommended)
 
 ### Step 1: System Setup
@@ -82,7 +82,7 @@ CSAT_LOG_DIR=/var/log/csat
 CSAT_SURVEY_EXPIRY_HOURS=24
 
 # CORS Configuration (comma-separated)
-CSAT_ALLOWED_ORIGINS=https://csat.service.ru,https://csat.anotherservice.eng
+CSAT_ALLOWED_ORIGINS=https://survey.ostrovok.ru,https://survey.emergingtravel.com
 
 # Jira Integration (set your webhook URL)
 JIRA_WEBHOOK_URL=https://your-jira-instance.com/rest/api/3/webhooks
@@ -157,7 +157,7 @@ upstream csat_backend {
 server {
     listen 80;
     listen [::]:80;
-    server_name csat.service.ru csat.anotherservice.eng;
+    server_name survey.ostrovok.ru survey.emergingtravel.com;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -172,10 +172,10 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name csat.service.ru;
+    server_name survey.ostrovok.ru;
 
-    ssl_certificate /etc/letsencrypt/live/csat.service.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/csat.service.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/survey.ostrovok.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/survey.ostrovok.ru/privkey.pem;
 
     # SSL Configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -236,10 +236,10 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name csat.anotherservice.eng;
+    server_name survey.emergingtravel.com;
 
-    ssl_certificate /etc/letsencrypt/live/csat.anotherservice.eng/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/csat.anotherservice.eng/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/survey.emergingtravel.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/survey.emergingtravel.com/privkey.pem;
 
     # SSL Configuration (same as above)
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -307,8 +307,8 @@ sudo systemctl reload nginx
 ```bash
 # Install certificates
 sudo certbot certonly --nginx \
-  -d csat.service.ru \
-  -d csat.anotherservice.eng \
+  -d survey.ostrovok.ru \
+  -d survey.emergingtravel.com \
   --email your-email@example.com \
   --agree-tos \
   --non-interactive
@@ -355,7 +355,7 @@ sudo systemctl status csat
 
 ```bash
 # Test the service is running
-curl -I https://csat.service.ru/survey/test 2>/dev/null | head -n 1
+curl -I https://survey.ostrovok.ru/survey/test 2>/dev/null | head -n 1
 
 # Check service status
 sudo systemctl status csat --no-pager

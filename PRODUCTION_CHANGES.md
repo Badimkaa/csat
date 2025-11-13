@@ -54,7 +54,7 @@ CSAT_SURVEY_EXPIRY_HOURS=24         # Survey validity period
 
 ### Security & Integration
 ```bash
-CSAT_ALLOWED_ORIGINS=https://csat.service.ru,https://csat.anotherservice.eng
+CSAT_ALLOWED_ORIGINS=https://survey.ostrovok.ru,https://survey.emergingtravel.com
 JIRA_WEBHOOK_URL=https://your-jira-instance.com/rest/api/3/webhooks
 ```
 
@@ -198,4 +198,4 @@ See DEPLOYMENT.md for:
 3. **Configure**: Edit `/opt/csat/.env`
 4. **Setup Nginx**: Follow DEPLOYMENT.md sections 6-7
 5. **Get SSL**: Run certbot command from DEPLOYMENT.md
-6. **Test**: Access https://csat.service.ru/
+6. **Test**: Access https://survey.ostrovok.ru/

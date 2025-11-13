@@ -275,7 +275,7 @@ sudo systemctl restart csat
 sudo certbot certificates
 
 # Check expiry date
-sudo openssl x509 -in /etc/letsencrypt/live/csat.service.ru/cert.pem -noout -dates
+sudo openssl x509 -in /etc/letsencrypt/live/survey.ostrovok.ru/cert.pem -noout -dates
 
 # Dry run renewal
 sudo certbot renew --dry-run
@@ -284,7 +284,7 @@ sudo certbot renew --dry-run
 sudo certbot renew --force-renewal
 
 # Check Nginx SSL configuration
-sudo openssl s_client -connect csat.service.ru:443 -servername csat.service.ru
+sudo openssl s_client -connect survey.ostrovok.ru:443 -servername survey.ostrovok.ru
 ```
 
 ## Maintenance Schedule
