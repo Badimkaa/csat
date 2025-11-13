@@ -102,8 +102,9 @@ ExecStart=/opt/csat/venv/bin/python -m uvicorn main:app \
 
 Restart=on-failure
 RestartSec=10
-StartLimitInterval=30
-StartLimitBurst=2
+StartLimitInterval=60
+StartLimitBurst=3
+TimeoutStartSec=180
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=csat
