@@ -89,7 +89,7 @@ Description=CSAT Survey Service
 After=network.target
 
 [Service]
-Type=notify
+Type=simple
 User=csat
 WorkingDirectory=/opt/csat
 Environment="PATH=/opt/csat/venv/bin"
@@ -102,6 +102,8 @@ ExecStart=/opt/csat/venv/bin/python -m uvicorn main:app \
 
 Restart=on-failure
 RestartSec=10
+StartLimitInterval=30
+StartLimitBurst=2
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=csat
