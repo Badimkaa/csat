@@ -67,7 +67,7 @@ CSAT_DATA_DIR=/var/lib/csat
 CSAT_LOG_DIR=/var/log/csat
 
 # Survey Configuration
-CSAT_SURVEY_EXPIRY_HOURS=24
+CSAT_SURVEY_EXPIRY_HOURS=168
 
 # CORS Configuration (comma-separated)
 CSAT_ALLOWED_ORIGINS=https://survey.ostrovok.ru,https://survey.emergingtravel.com
@@ -121,8 +121,7 @@ systemctl enable csat
 
 # Step 7: Nginx Configuration
 echo "🌐 Step 7: Configuring Nginx..."
-cp /opt/csat/DEPLOYMENT.md /opt/csat/nginx-config-example.conf
-# Note: User should manually configure nginx based on DEPLOYMENT.md
+# Nginx configuration should be done manually based on README.md guide
 
 # Step 8: SSL Setup (optional)
 echo "🔐 Step 8: SSL Certificate Setup (optional)"
@@ -148,7 +147,7 @@ echo "========================================="
 echo ""
 echo "Next steps:"
 echo "1. Edit /opt/csat/.env to configure settings"
-echo "2. Read /opt/csat/DEPLOYMENT.md for Nginx setup"
+echo "2. Read /opt/csat/README.md for Nginx setup"
 echo "3. Obtain SSL certificates with certbot"
 echo "4. Configure Nginx based on the guide"
 echo ""
