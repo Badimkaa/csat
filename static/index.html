@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CSAT</title>
+  <link rel="stylesheet" href="/static/csat.css">
+</head>
+<body>
+  <div class="csat-bg"></div>
+  <div class="csat-center">
+    <div class="csat-card">
+      <!-- General Form -->
+      <form id="csatForm" class="form-general">
+        <div id="task-key" class="csat-task-key"></div>
+        <div class="csat-stars" id="stars" style="margin-bottom:22px;">
+          <span data-value="1" class="star">&#9733;</span>
+          <span data-value="2" class="star">&#9733;</span>
+          <span data-value="3" class="star">&#9733;</span>
+          <span data-value="4" class="star">&#9733;</span>
+          <span data-value="5" class="star">&#9733;</span>
+          <input type="hidden" name="score" id="scoreInput" value="">
+        </div>
+        <label class="csat-label" id="label-comment" for="commentArea"></label>
+        <textarea id="commentArea" name="comment" placeholder="Optional comment"></textarea>
+        <button type="submit" id="submitBtn" disabled>Submit</button>
+      </form>
+
+      <!-- Special Form for APIR/APIO -->
+      <form id="csatFormSpecial" class="form-special" style="display:none;">
+        <div id="task-key-special" class="csat-task-key"></div>
+        <div class="csat-stars" id="stars-special" style="margin-bottom:22px;">
+          <span data-value="1" class="star">&#9733;</span>
+          <span data-value="2" class="star">&#9733;</span>
+          <span data-value="3" class="star">&#9733;</span>
+          <span data-value="4" class="star">&#9733;</span>
+          <span data-value="5" class="star">&#9733;</span>
+          <input type="hidden" name="score" id="scoreInputSpecial" value="">
+        </div>
+        <label class="csat-label" id="label-comment-special" for="commentAreaSpecial"></label>
+        <textarea id="commentAreaSpecial" name="comment" placeholder="Optional comment"></textarea>
+        <button type="submit" id="submitBtnSpecial" disabled>Submit</button>
+      </form>
+
+      <div id="response" class="csat-response"></div>
+    </div>
+  </div>
+  <script>
+    window.CSAT_TOKEN=__TOKEN__;
+    window.CSAT_LANG=__LANG__;
+    window.CSAT_ISSUE_KEY=__ISSUE_KEY__;
+    window.CSAT_PROJECT_KEY=__PROJECT_KEY__;
+  </script>
+  <script src="/static/csat.js"></script>
+</body>
+</html>
