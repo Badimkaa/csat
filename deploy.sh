@@ -96,8 +96,6 @@ Environment="PATH=/opt/csat/venv/bin"
 EnvironmentFile=/opt/csat/.env
 
 ExecStart=/opt/csat/venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000
-
-
 Restart=on-failure
 RestartSec=10
 StartLimitInterval=60
