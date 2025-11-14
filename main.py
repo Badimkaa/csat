@@ -11,6 +11,7 @@ import os
 import threading
 import time
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -23,15 +24,28 @@ LOG_DIR = Path(os.environ.get("CSAT_LOG_DIR", "/var/log/csat"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-# Configure logging
+# Configure logging with automatic rotation
 log_file = LOG_DIR / "app.log"
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Timed rotating file handler: rotates daily at midnight, keeps 7 days of backups
+file_handler = TimedRotatingFileHandler(
+    filename=str(log_file),
+    when='midnight',
+    interval=1,
+    backupCount=7,
+    encoding='utf-8'
+)
+file_handler.setFormatter(formatter)
+
+# Stream handler for console output
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+# Configure root logger
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file),
-        logging.StreamHandler()
-    ]
+    handlers=[file_handler, stream_handler]
 )
 logger = logging.getLogger(__name__)
 

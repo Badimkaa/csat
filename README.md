@@ -272,21 +272,20 @@ server {
 
 ### Log Rotation
 
-Create `/etc/logrotate.d/csat` to prevent disk fill:
+Logs are automatically rotated daily by the application with no additional configuration needed. The service keeps 7 days of logs in `/var/log/csat/`:
 
 ```bash
-sudo cat > /etc/logrotate.d/csat << 'EOF'
-/var/log/csat/app.log {
-    daily
-    rotate 30
-    compress
-    delaycompress
-    missingok
-    notifempty
-    create 0640 csat csat
-}
-EOF
+# View logs
+ls -lh /var/log/csat/
+
+# Check current log
+sudo tail -f /var/log/csat/app.log
+
+# View rotated logs
+sudo ls -la /var/log/csat/app.log.*
 ```
+
+Logs rotate automatically at midnight and old logs are removed after 7 days.
 
 ---
 
@@ -459,7 +458,7 @@ sudo systemctl restart csat
 
 ### Logs Growing Too Large
 
-Already handled by log rotation (daily, keeps 30 days compressed).
+Logs are automatically rotated daily at midnight and kept for 7 days. No configuration needed.
 
 Check status:
 ```bash
