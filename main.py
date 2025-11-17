@@ -80,7 +80,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # r
 def save_surveys():
-    """Persist pending_surveys to a JSON file"""
+    """Persist pending_surveys to a JSON file with atomic writes"""
     try:
         with surveys_lock:
             # Convert datetime objects to ISO format strings for JSON serialization
@@ -92,8 +92,12 @@ def save_surveys():
                     "language": survey["language"],
                     "created_at": survey["created_at"].isoformat()
                 }
-            with open(SURVEYS_FILE, 'w') as f:
+            # Write to temporary file first, then atomically rename
+            # This prevents file corruption if write is interrupted
+            temp_file = SURVEYS_FILE.with_suffix('.tmp')
+            with open(temp_file, 'w') as f:
                 json.dump(surveys_to_save, f)
+            temp_file.replace(SURVEYS_FILE)  # Atomic operation on most filesystems
     except Exception as e:
         logger.error(f"Error saving surveys: {e}")
 
@@ -148,6 +152,9 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
 
 @app.get("/survey/{token}", response_class=HTMLResponse)
 def get_survey(token: str, request: Request, lang: str = Query(None)):
+    # Copy survey data inside lock to prevent race condition
+    # where survey might be deleted by cleanup_expired_surveys
+    survey_data = None
     with surveys_lock:
         survey = pending_surveys.get(token)
         # Check if survey is expired
@@ -156,10 +163,17 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
             if now - survey["created_at"] > timedelta(hours=SURVEY_EXPIRY_HOURS):
                 survey = None
 
-    survey_language = (survey["language"] if survey and "language" in survey else None)
+        # Copy data inside lock to safe local variables
+        if survey:
+            survey_data = {
+                "issue_key": survey["issue_key"],
+                "language": survey["language"]
+            }
+
+    survey_language = (survey_data["language"] if survey_data else None)
     lang = lang or survey_language or 'en'
 
-    if not survey:
+    if not survey_data:
         status = 403
         if lang == "ru":
             title = "Ссылка недействительна или уже использована"
@@ -172,10 +186,11 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
 
         ctx = {"request": request, "title": title, "desc": desc, "note": note}
         return templates.TemplateResponse("403.html", ctx, status_code=status)
+
     with open(os.path.join("static", "index.html"), encoding='utf-8') as f:
         data = f.read()
         # Extract project key from issue_key (e.g., "APIR-123" -> "APIR")
-        issue_key = survey["issue_key"]
+        issue_key = survey_data["issue_key"]
         project_key = issue_key.split('-')[0] if '-' in issue_key else ""
 
         # Inject as JSON-encoded literals to keep JS-safe
