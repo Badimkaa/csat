@@ -181,6 +181,10 @@ All settings in `/opt/csat/.env`:
 
 ### Nginx Configuration
 
+**Note:** If using a centralized Nginx (managed via GitLab), skip the basic config below and use your existing IP-based access control instead.
+
+**For standalone deployments**, use:
+
 ```nginx
 upstream csat_backend {
     server 127.0.0.1:8000;
@@ -269,6 +273,37 @@ server {
     # (copy location blocks from Russian server block above)
 }
 ```
+
+### API Endpoint Protection
+
+The `/survey/create` endpoint should be protected to prevent unauthorized survey creation.
+
+**Option 1: Nginx IP Allowlist (Recommended for centralized setups)**
+
+```nginx
+location = /survey/create {
+  allow 10.11.12.13;        # Your Jira server IP
+  allow 10.11.12.14;        # Your other Jira server IP
+  deny all;
+  proxy_pass http://csat_backend;
+  include snippets.d/proxy_params;
+}
+```
+
+This approach:
+- ✅ Blocks unauthorized requests at Nginx level (fast)
+- ✅ Works with all backend server implementations
+- ✅ Easy to audit and manage
+- ✅ Requires no code changes
+
+**Option 2: Python IP Validation (Defense in depth)**
+
+Add to `/opt/csat/.env`:
+```bash
+CSAT_ALLOWED_IPS=10.11.12.13,10.11.12.14
+```
+
+Then the application validates IPs at the Python level as well.
 
 ### Log Rotation
 
@@ -511,6 +546,7 @@ ls -lh /var/log/csat/
 - ✅ Thread-safe operations with locks (prevents race conditions)
 - ✅ Atomic file writes (prevents data corruption)
 - ✅ Data consistency guarantees across worker processes
+- ✅ `/survey/create` endpoint protected (IP allowlist recommended)
 
 ### Best Practices
 - Set `CSAT_ALLOWED_ORIGINS` to your domains

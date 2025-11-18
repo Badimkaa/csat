@@ -148,7 +148,7 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
 
     # Determine domain based on language
     domain = "survey.ostrovok.ru" if language == "ru" else "survey.emergingtravel.com"
-    return {"link": f"http://{domain}/survey/{token}?lang={language}"}
+    return {"link": f"https://{domain}/survey/{token}?lang={language}"}
 
 @app.get("/survey/{token}", response_class=HTMLResponse)
 def get_survey(token: str, request: Request, lang: str = Query(None)):
