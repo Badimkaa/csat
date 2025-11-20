@@ -167,7 +167,7 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
             "language": language,
             "created_at": datetime.now()
         }
-    save_surveys()
+        save_surveys()
 
     # Determine domain based on language
     domain = "survey.ostrovok.ru" if language == "ru" else "survey.emergingtravel.com"
@@ -293,9 +293,8 @@ def submit_survey(token: str, score: int = Form(...), comment: str = Form("")):
         issue_key = survey["issue_key"]
         # Remove the link after validation (to prevent reuse)
         del pending_surveys[token]
-
-    # Save state after removing the link
-    save_surveys()
+        # Save state after removing the link (inside lock for atomicity)
+        save_surveys()
 
     # Send to Jira in a background thread to avoid blocking the response
     thread = threading.Thread(target=send_to_jira, args=(issue_key, score, comment), daemon=True)
