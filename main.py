@@ -137,6 +137,25 @@ def cleanup_expired_surveys():
 
 @app.post("/survey/create")
 def create_survey(issue_key: str = Form(...), language: str = Form('en')):
+    # Before creating a new survey, reload all surveys from disk to ensure
+    # we have the latest state from other workers
+    with surveys_lock:
+        if SURVEYS_FILE.exists():
+            try:
+                with open(SURVEYS_FILE, 'r') as f:
+                    surveys_data = json.load(f)
+                    # Merge disk surveys with current memory (disk is authoritative)
+                    for token, survey in surveys_data.items():
+                        if token not in pending_surveys:
+                            pending_surveys[token] = {
+                                "issue_key": survey["issue_key"],
+                                "is_used": survey["is_used"],
+                                "language": survey["language"],
+                                "created_at": datetime.fromisoformat(survey["created_at"])
+                            }
+            except Exception as e:
+                logger.error(f"Error reloading surveys before create: {e}")
+
     cleanup_expired_surveys()
     token = secrets.token_urlsafe(16)
     with surveys_lock:
