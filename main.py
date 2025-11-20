@@ -170,14 +170,21 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
                 "language": survey["language"]
             }
 
-    # Determine language from request domain or stored survey language
-    host = request.headers.get("host", "").lower()
-    if "ostrovok.ru" in host:
-        lang = "ru"
-    elif "emergingtravel.com" in host:
-        lang = "en"
-    else:
-        # Fallback to survey language if stored, otherwise English
+    # Determine language: from query param, then from Host header, then from survey storage
+    if not lang:  # If no ?lang= parameter provided
+        host = request.headers.get("host", "").lower()
+        if "ostrovok.ru" in host:
+            lang = "ru"
+        elif "emergingtravel.com" in host:
+            lang = "en"
+        elif survey_data:
+            # Fallback to survey language if stored
+            lang = survey_data["language"]
+        else:
+            # Final fallback to English
+            lang = "en"
+    elif lang not in ("ru", "en"):
+        # Invalid lang parameter, use survey language or default
         lang = survey_data["language"] if survey_data else "en"
 
     if not survey_data:
