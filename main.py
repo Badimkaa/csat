@@ -105,9 +105,12 @@ def load_surveys():
     """Load pending_surveys from JSON file at startup"""
     global pending_surveys
     try:
+        logger.info(f"Checking for surveys file at: {SURVEYS_FILE}")
         if SURVEYS_FILE.exists():
+            logger.info(f"Surveys file exists, loading...")
             with open(SURVEYS_FILE, 'r') as f:
                 surveys_data = json.load(f)
+                logger.info(f"Loaded JSON with {len(surveys_data)} tokens")
                 for token, survey in surveys_data.items():
                     pending_surveys[token] = {
                         "issue_key": survey["issue_key"],
@@ -115,9 +118,11 @@ def load_surveys():
                         "language": survey["language"],
                         "created_at": datetime.fromisoformat(survey["created_at"])
                     }
-            logger.info(f"Loaded {len(pending_surveys)} surveys from {SURVEYS_FILE}")
+            logger.info(f"Successfully loaded {len(pending_surveys)} surveys from {SURVEYS_FILE}")
+        else:
+            logger.info(f"Surveys file does not exist at {SURVEYS_FILE}, starting with empty surveys")
     except Exception as e:
-        logger.error(f"Error loading surveys: {e}")
+        logger.error(f"Error loading surveys: {e}", exc_info=True)
         pending_surveys = {}
 
 def cleanup_expired_surveys():
