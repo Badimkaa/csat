@@ -157,11 +157,16 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
     survey_data = None
     with surveys_lock:
         survey = pending_surveys.get(token)
+        logger.info(f"Survey token lookup: {token} -> Found: {survey is not None}")
+
         # Check if survey is expired
         if survey:
             now = datetime.now()
             if now - survey["created_at"] > timedelta(hours=SURVEY_EXPIRY_HOURS):
+                logger.info(f"Survey {token} expired: created at {survey['created_at']}, now {now}, hours diff: {(now - survey['created_at']).total_seconds() / 3600}")
                 survey = None
+            else:
+                logger.info(f"Survey {token} is valid, expires in {(timedelta(hours=SURVEY_EXPIRY_HOURS) - (now - survey['created_at'])).total_seconds() / 3600} hours")
 
         # Copy data inside lock to safe local variables
         if survey:
@@ -169,6 +174,9 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
                 "issue_key": survey["issue_key"],
                 "language": survey["language"]
             }
+            logger.info(f"Survey data copied for token {token}")
+        else:
+            logger.info(f"Survey data is None for token {token}")
 
     # Determine language: from query param, then from Host header, then from survey storage
     if not lang:  # If no ?lang= parameter provided
