@@ -147,12 +147,14 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
                     # Merge disk surveys with current memory (disk is authoritative)
                     for token, survey in surveys_data.items():
                         if token not in pending_surveys:
-                            pending_surveys[token] = {
-                                "issue_key": survey["issue_key"],
-                                "is_used": survey["is_used"],
-                                "language": survey["language"],
-                                "created_at": datetime.fromisoformat(survey["created_at"])
-                            }
+                            # Only load if not already used
+                            if not survey.get("is_used", False):
+                                pending_surveys[token] = {
+                                    "issue_key": survey["issue_key"],
+                                    "is_used": survey["is_used"],
+                                    "language": survey["language"],
+                                    "created_at": datetime.fromisoformat(survey["created_at"])
+                                }
             except Exception as e:
                 logger.error(f"Error reloading surveys before create: {e}")
 
