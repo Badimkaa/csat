@@ -615,7 +615,11 @@ curl -X POST http://localhost:8000/survey/create \
   -F "language=ru"
 ```
 
-Response: `{"link": "https://survey.ostrovok.ru/survey/ABC123XYZ?lang=ru"}`
+Response: `{"link": "https://survey.ostrovok.ru/survey/ABC123XYZ"}`
+
+**Note:** Language is automatically determined by the domain:
+- `survey.ostrovok.ru` → Russian (ru)
+- `survey.emergingtravel.com` → English (en)
 
 ### Submit Survey
 ```bash
@@ -625,6 +629,8 @@ curl -X POST https://survey.ostrovok.ru/survey/ABC123XYZ/submit \
 ```
 
 Response: `{"status": "ok"}`
+
+**Note:** Language is determined by the domain used in the URL (no lang parameter needed)
 
 ---
 

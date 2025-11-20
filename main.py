@@ -148,7 +148,7 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
 
     # Determine domain based on language
     domain = "survey.ostrovok.ru" if language == "ru" else "survey.emergingtravel.com"
-    return {"link": f"https://{domain}/survey/{token}?lang={language}"}
+    return {"link": f"https://{domain}/survey/{token}"}
 
 @app.get("/survey/{token}", response_class=HTMLResponse)
 def get_survey(token: str, request: Request, lang: str = Query(None)):
@@ -170,8 +170,15 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
                 "language": survey["language"]
             }
 
-    survey_language = (survey_data["language"] if survey_data else None)
-    lang = lang or survey_language or 'en'
+    # Determine language from request domain or stored survey language
+    host = request.headers.get("host", "").lower()
+    if "ostrovok.ru" in host:
+        lang = "ru"
+    elif "emergingtravel.com" in host:
+        lang = "en"
+    else:
+        # Fallback to survey language if stored, otherwise English
+        lang = survey_data["language"] if survey_data else "en"
 
     if not survey_data:
         status = 403
