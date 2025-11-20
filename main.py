@@ -105,12 +105,9 @@ def load_surveys():
     """Load pending_surveys from JSON file at startup"""
     global pending_surveys
     try:
-        logger.info(f"Checking for surveys file at: {SURVEYS_FILE}")
         if SURVEYS_FILE.exists():
-            logger.info(f"Surveys file exists, loading...")
             with open(SURVEYS_FILE, 'r') as f:
                 surveys_data = json.load(f)
-                logger.info(f"Loaded JSON with {len(surveys_data)} tokens")
                 for token, survey in surveys_data.items():
                     pending_surveys[token] = {
                         "issue_key": survey["issue_key"],
@@ -118,9 +115,9 @@ def load_surveys():
                         "language": survey["language"],
                         "created_at": datetime.fromisoformat(survey["created_at"])
                     }
-            logger.info(f"Successfully loaded {len(pending_surveys)} surveys from {SURVEYS_FILE}")
+            logger.info(f"Loaded {len(pending_surveys)} surveys from disk")
         else:
-            logger.info(f"Surveys file does not exist at {SURVEYS_FILE}, starting with empty surveys")
+            logger.info(f"Starting with no surveys on disk")
     except Exception as e:
         logger.error(f"Error loading surveys: {e}", exc_info=True)
         pending_surveys = {}
@@ -162,26 +159,37 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
     survey_data = None
     with surveys_lock:
         survey = pending_surveys.get(token)
-        logger.info(f"Survey token lookup: {token} -> Found: {survey is not None}")
+
+        # If token not found in memory, it might have been created by another worker
+        # Reload surveys from disk to check if it exists
+        if survey is None and SURVEYS_FILE.exists():
+            try:
+                with open(SURVEYS_FILE, 'r') as f:
+                    surveys_data = json.load(f)
+                    if token in surveys_data:
+                        survey_data_from_file = surveys_data[token]
+                        pending_surveys[token] = {
+                            "issue_key": survey_data_from_file["issue_key"],
+                            "is_used": survey_data_from_file["is_used"],
+                            "language": survey_data_from_file["language"],
+                            "created_at": datetime.fromisoformat(survey_data_from_file["created_at"])
+                        }
+                        survey = pending_surveys[token]
+                        logger.info(f"Survey {token} loaded from disk (created by another worker)")
+            except Exception as e:
+                logger.error(f"Error reloading surveys from disk: {e}")
 
         # Check if survey is expired
         if survey:
             now = datetime.now()
             if now - survey["created_at"] > timedelta(hours=SURVEY_EXPIRY_HOURS):
-                logger.info(f"Survey {token} expired: created at {survey['created_at']}, now {now}, hours diff: {(now - survey['created_at']).total_seconds() / 3600}")
                 survey = None
             else:
-                logger.info(f"Survey {token} is valid, expires in {(timedelta(hours=SURVEY_EXPIRY_HOURS) - (now - survey['created_at'])).total_seconds() / 3600} hours")
-
-        # Copy data inside lock to safe local variables
-        if survey:
-            survey_data = {
-                "issue_key": survey["issue_key"],
-                "language": survey["language"]
-            }
-            logger.info(f"Survey data copied for token {token}")
-        else:
-            logger.info(f"Survey data is None for token {token}")
+                # Copy data inside lock to safe local variables
+                survey_data = {
+                    "issue_key": survey["issue_key"],
+                    "language": survey["language"]
+                }
 
     # Determine language: from query param, then from Host header, then from survey storage
     if not lang:  # If no ?lang= parameter provided
@@ -232,6 +240,25 @@ def get_survey(token: str, request: Request, lang: str = Query(None)):
 def submit_survey(token: str, score: int = Form(...), comment: str = Form("")):
     with surveys_lock:
         survey = pending_surveys.get(token)
+
+        # If token not found in memory, try reloading from disk
+        if survey is None and SURVEYS_FILE.exists():
+            try:
+                with open(SURVEYS_FILE, 'r') as f:
+                    surveys_data = json.load(f)
+                    if token in surveys_data:
+                        survey_data_from_file = surveys_data[token]
+                        pending_surveys[token] = {
+                            "issue_key": survey_data_from_file["issue_key"],
+                            "is_used": survey_data_from_file["is_used"],
+                            "language": survey_data_from_file["language"],
+                            "created_at": datetime.fromisoformat(survey_data_from_file["created_at"])
+                        }
+                        survey = pending_surveys[token]
+                        logger.info(f"Survey {token} loaded from disk (created by another worker)")
+            except Exception as e:
+                logger.error(f"Error reloading surveys from disk: {e}")
+
         lang = (survey["language"] if survey and "language" in survey else 'en')
         if not survey:
             msg = "Ссылка недействительна или уже использована" if lang == "ru" else "Link is invalid or already used"
