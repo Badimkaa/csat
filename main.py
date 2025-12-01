@@ -79,27 +79,31 @@ SURVEYS_FILE = DATA_DIR / "surveys.json"
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # r
-def save_surveys():
-    """Persist pending_surveys to a JSON file with atomic writes"""
+def _save_surveys_internal():
+    """Internal: Persist pending_surveys to a JSON file with atomic writes (must be called with lock held)"""
     try:
-        with surveys_lock:
-            # Convert datetime objects to ISO format strings for JSON serialization
-            surveys_to_save = {}
-            for token, survey in pending_surveys.items():
-                surveys_to_save[token] = {
-                    "issue_key": survey["issue_key"],
-                    "is_used": survey["is_used"],
-                    "language": survey["language"],
-                    "created_at": survey["created_at"].isoformat()
-                }
-            # Write to temporary file first, then atomically rename
-            # This prevents file corruption if write is interrupted
-            temp_file = SURVEYS_FILE.with_suffix('.tmp')
-            with open(temp_file, 'w') as f:
-                json.dump(surveys_to_save, f)
-            temp_file.replace(SURVEYS_FILE)  # Atomic operation on most filesystems
+        # Convert datetime objects to ISO format strings for JSON serialization
+        surveys_to_save = {}
+        for token, survey in pending_surveys.items():
+            surveys_to_save[token] = {
+                "issue_key": survey["issue_key"],
+                "is_used": survey["is_used"],
+                "language": survey["language"],
+                "created_at": survey["created_at"].isoformat()
+            }
+        # Write to temporary file first, then atomically rename
+        # This prevents file corruption if write is interrupted
+        temp_file = SURVEYS_FILE.with_suffix('.tmp')
+        with open(temp_file, 'w') as f:
+            json.dump(surveys_to_save, f)
+        temp_file.replace(SURVEYS_FILE)  # Atomic operation on most filesystems
     except Exception as e:
         logger.error(f"Error saving surveys: {e}")
+
+def save_surveys():
+    """Persist pending_surveys to a JSON file with atomic writes (acquires lock)"""
+    with surveys_lock:
+        _save_surveys_internal()
 
 def load_surveys():
     """Load pending_surveys from JSON file at startup"""
@@ -170,7 +174,7 @@ def create_survey(issue_key: str = Form(...), language: str = Form('en')):
             "language": language,
             "created_at": datetime.now()
         }
-        save_surveys()
+        _save_surveys_internal()
 
     # Determine domain based on language
     domain = "survey.ostrovok.ru" if language == "ru" else "survey.emergingtravel.com"
@@ -305,7 +309,7 @@ def submit_survey(token: str, score: int = Form(...), comment: str = Form("")):
         # Remove the link after validation (to prevent reuse)
         del pending_surveys[token]
         # Save state after removing the link (inside lock for atomicity)
-        save_surveys()
+        _save_surveys_internal()
 
     # Send to Jira in a background thread to avoid blocking the response
     thread = threading.Thread(target=send_to_jira, args=(issue_key, score, comment), daemon=True)
