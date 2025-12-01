@@ -1,6 +1,6 @@
-const token = window.CSAT_TOKEN || "";
-const lang = window.CSAT_LANG || "en";
-const projectKey = window.CSAT_PROJECT_KEY || "";
+const token = typeof TOKEN !== 'undefined' ? TOKEN : "";
+const lang = typeof LANG !== 'undefined' ? LANG : "en";
+const projectKey = typeof PROJECT_KEY !== 'undefined' ? PROJECT_KEY : "";
 
 // Check if project is APIR or APIO
 const isSpecialProject = projectKey === "APIR" || projectKey === "APIO";
@@ -28,7 +28,7 @@ const MESSAGES = {
 const texts = MESSAGES[lang] || MESSAGES['en'];
 
 document.addEventListener("DOMContentLoaded", function() {
-  const ticketKey = window.CSAT_ISSUE_KEY || "";
+  const ticketKey = typeof ISSUE_KEY !== 'undefined' ? ISSUE_KEY : "";
 
   // Show/hide forms based on project key
   if (isSpecialProject) {

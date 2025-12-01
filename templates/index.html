@@ -45,10 +45,11 @@
     </div>
   </div>
   <script>
-    window.CSAT_TOKEN=__TOKEN__;
-    window.CSAT_LANG=__LANG__;
-    window.CSAT_ISSUE_KEY=__ISSUE_KEY__;
-    window.CSAT_PROJECT_KEY=__PROJECT_KEY__;
+    // These values are dynamically injected by the FastAPI backend
+    const TOKEN = "{{ token|safe }}";
+    const LANG = "{{ lang|safe }}";
+    const ISSUE_KEY = "{{ issue_key|safe }}";
+    const PROJECT_KEY = "{{ project_key|safe }}";
   </script>
   <script src="/static/csat.js"></script>
 </body>
