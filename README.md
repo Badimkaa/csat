@@ -40,7 +40,7 @@ python main.py
 ```bash
 # On Ubuntu server
 cd /opt
-sudo git clone https://gitlab.ostrovok.ru/atlassian_team/csat-service.git csat
+sudo git clone https://gitlab.srv.team/atlassian_team/csat-service.git csat
 cd csat
 sudo bash deploy.sh
 
@@ -61,7 +61,7 @@ sudo bash deploy.sh
 
 ```bash
 cd /opt
-sudo git clone https://gitlab.ostrovok.ru/atlassian_team/csat-service.git csat
+sudo git clone https://gitlab.srv.team/atlassian_team/csat-service.git csat
 cd csat
 ```
 
